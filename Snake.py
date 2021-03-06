@@ -1,7 +1,7 @@
+from os import system
 from random import randint
 from time import sleep
 import keyboard
-
 import cursor
 
 
@@ -11,53 +11,38 @@ class Game:
 
     def __init__(self):
         self.snake = Snake()
-
+        self.food_pos = None
+        self.alive = True
 
     def game_loop(self):
+        system("cls")
         self.generate_food()
-        while True:
+        while self.alive:
             self.draw()
-            self.update()
+            self.snake.update()
 
     def draw(self):
         """draws all game objects into the terminal"""
-        for h in range(self.HEIGHT):
-            for w in range(self.WIDTH):
-                if h == 0 or h == self.HEIGHT - 1:
-                    cursor.draw(w, h, Snake.WALL)
-                elif w == 0 or w == Game.WIDTH - 1:
-                    cursor.draw(w, h, Snake.WALL)
+        system("cls")
+        for y in range(self.HEIGHT):
+            temp = ""
+            for x in range(self.WIDTH):
+                if y == 0 or y == self.HEIGHT - 1:
+                    temp += Snake.WALL
+                elif x == 0 or x == Game.WIDTH - 1:
+                    temp += Snake.WALL
+                elif x == self.snake.x and y == self.snake.y:
+                    temp += Snake.SNAKE_HEAD
+                elif x == self.food_pos[0] and y == self.food_pos[1]:
+                    temp += Snake.FOOD
                 else:
-                    cursor.draw(w, h, Snake.EMPTY)
-        X, Y = Snake.START_POS
-        cursor.draw(X, Y, Snake.SNAKE_HEAD)
-        self.generate_food()
-        A, B = randint(1, self.WIDTH - 1), randint(1, self.HEIGHT - 1)
-        cursor.draw(A, B, Snake.FOOD)
+                    temp += Snake.EMPTY
+
+            print(temp)
 
     def generate_food(self):
-        '''if eaten generate new food'''
+        """if eaten generate new food"""
         self.food_pos = randint(1, self.WIDTH - 1), randint(1, self.HEIGHT - 1)
-
-
-    def update(self):
-        X, Y = Snake.START_POS
-        x = 0
-        y = 1
-        for x in range(25):
-            self.snake.handle_input()
-            cursor.draw(X, Y, Snake.EMPTY)
-            # movement direction - to be considered later
-            X += x
-            Y += y
-            cursor.draw(X, Y, Snake.SNAKE_HEAD)
-            sleep(1)
-            if X == 0 or X == 49:
-                print("GAME OVER")
-                break
-            if Y == 0 or Y == 23:
-                print("GAME OVER")
-                break
 
 
 class Snake:
@@ -67,17 +52,30 @@ class Snake:
     SNAKE = 'X'
     FOOD = 'F'
 
-    START_POS = 25, 12
+    START_POS = 24, 12
     DIRECTIONS = {'w': (0, -1), 'd': (1, 0), 's': (0, 1), 'a': (-1, 0)}
     UP, RIGHT, DOWN, LEFT = 'wdsa'
 
     def __init__(self):
-        self.dir = self.DIRECTIONS['w']
+        self.dir = self.DIRECTIONS['d']
         self.x, self.y = self.START_POS
 
     def update(self) -> None:
         """updates game state by one tick of logic"""
-        pass
+        self.handle_input()
+        self.move()
+        #Death by collision with the wall
+        if self.x == 49 or self.x == 0:
+            Game.alive = False
+            print("Dead")
+            self.x, self.y = self.START_POS
+            sleep(3)
+
+        if self.y == 24 or self.y == 0:
+            Game.alive = False
+            print("Dead")
+            self.x, self.y = self.START_POS
+            sleep(3)
 
     def handle_input(self):
         """Changes direction of snake based on player input"""
@@ -90,10 +88,10 @@ class Snake:
         if keyboard.is_pressed('s'):
             self.dir = self.DIRECTIONS['s']
 
-
     def move(self) -> None:
         """moves snake by one field in x or y axis"""
-        pass
+        self.x += self.dir[0]
+        self.y += self.dir[1]
 
     def get_collision(self) -> str:
         """
