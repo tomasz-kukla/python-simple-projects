@@ -2,7 +2,6 @@ from os import system
 from random import randint
 from time import sleep
 import keyboard
-import cursor
 
 
 class Game:
@@ -13,6 +12,7 @@ class Game:
         self.snake = Snake()
         self.food_pos = None
         self.alive = True
+        self.score = 0
 
     def game_loop(self):
         system("cls")
@@ -20,6 +20,8 @@ class Game:
         while self.alive:
             self.draw()
             self.snake.update()
+            if not self.alive:
+                return 0
 
     def draw(self):
         """draws all game objects into the terminal"""
@@ -33,8 +35,16 @@ class Game:
                     temp += Snake.WALL
                 elif x == self.snake.x and y == self.snake.y:
                     temp += Snake.SNAKE_HEAD
+                elif x == self.snake.x - 1 and y == self.snake.y - 1:
+                    for i in range(self.score):
+                        temp += Snake.SNAKE
                 elif x == self.food_pos[0] and y == self.food_pos[1]:
                     temp += Snake.FOOD
+                elif self.food_pos[0] == self.snake.x and self.food_pos[1] == self.snake.y:
+                    self.generate_food()
+                    self.score += 1
+                # elif y == self.snake.y:
+                #     temp += ""
                 else:
                     temp += Snake.EMPTY
 
@@ -64,18 +74,14 @@ class Snake:
         """updates game state by one tick of logic"""
         self.handle_input()
         self.move()
-        #Death by collision with the wall
-        if self.x == 49 or self.x == 0:
+        # Death by collision with the wall
+        if self.x == Game.WIDTH or self.x == 0 \
+                or self.y == Game.HEIGHT or self.y == 0:
             Game.alive = False
-            print("Dead")
+            print(f"Dead! score: {game.score} ")
             self.x, self.y = self.START_POS
-            sleep(3)
-
-        if self.y == 24 or self.y == 0:
-            Game.alive = False
-            print("Dead")
-            self.x, self.y = self.START_POS
-            sleep(3)
+            game.score = 0
+            sleep(2)
 
     def handle_input(self):
         """Changes direction of snake based on player input"""
