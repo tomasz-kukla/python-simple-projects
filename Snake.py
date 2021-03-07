@@ -35,14 +35,13 @@ class Game:
                     temp += Snake.WALL
                 elif x == self.snake.x and y == self.snake.y:
                     temp += Snake.SNAKE_HEAD
-                elif x == self.snake.x - 1 and y == self.snake.y - 1:
-                    for i in range(self.score):
-                        temp += Snake.SNAKE
+                # elif x == self.snake.x - 1 and y == self.snake.y - 1:
+                #     for i in range(self.score):
+                #         temp += Snake.SNAKE
                 elif x == self.food_pos[0] and y == self.food_pos[1]:
                     temp += Snake.FOOD
-                elif self.food_pos[0] == self.snake.x and self.food_pos[1] == self.snake.y:
-                    self.generate_food()
-                    self.score += 1
+                #consume
+
                 # elif y == self.snake.y:
                 #     temp += ""
                 else:
@@ -74,14 +73,10 @@ class Snake:
         """updates game state by one tick of logic"""
         self.handle_input()
         self.move()
-        # Death by collision with the wall
-        if self.x == Game.WIDTH or self.x == 0 \
-                or self.y == Game.HEIGHT or self.y == 0:
-            Game.alive = False
-            print(f"Dead! score: {game.score} ")
-            self.x, self.y = self.START_POS
-            game.score = 0
-            sleep(2)
+        self.consume()
+        self.die()
+
+
 
     def handle_input(self):
         """Changes direction of snake based on player input"""
@@ -108,11 +103,20 @@ class Snake:
 
     def consume(self) -> None:
         """handles snake growing logic when it has collided with food"""
-        pass
+        if self.x == game.food_pos[0] and  self.y ==  game.food_pos[1]:
+            game.score += 1
+            game.generate_food()
+
 
     def die(self) -> None:
-        """handles snake death when it has collided with food"""
-        pass
+        """handles snake death when it has collided with the wall"""
+        if self.x == Game.WIDTH or self.x == 0 \
+                or self.y == Game.HEIGHT or self.y == 0:
+            print(f"Dead! score: {game.score} ")
+            self.x, self.y = self.START_POS
+            game.score = 0
+            sleep(2)
+            game.alive = False
 
 
 if __name__ == '__main__':
