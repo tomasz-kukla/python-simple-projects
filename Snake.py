@@ -13,6 +13,7 @@ class Game:
         self.food_pos = None
         self.alive = True
         self.score = 0
+        self.dire = self.snake.dir
 
     def game_loop(self):
         system("cls")
@@ -26,6 +27,9 @@ class Game:
     def draw(self):
         """draws all game objects into the terminal"""
         system("cls")
+        print(f"Snake: {self.snake.x, self.snake.y}"
+              f"\nSnake-1: {self.snake.headPos[0], self.snake.headPos[1]} "
+              f"\nFood: {self.food_pos[0], self.food_pos[1]}")
         for y in range(self.HEIGHT):
             temp = ""
             for x in range(self.WIDTH):
@@ -35,23 +39,20 @@ class Game:
                     temp += Snake.WALL
                 elif x == self.snake.x and y == self.snake.y:
                     temp += Snake.SNAKE_HEAD
-                # elif x == self.snake.x - 1 and y == self.snake.y - 1:
-                #     for i in range(self.score):
-                #         temp += Snake.SNAKE
+
+                elif x == self.snake.headPos[0] and y == self.snake.headPos[1] and self.score > 0:
+                    temp += Snake.SNAKE
+
+
                 elif x == self.food_pos[0] and y == self.food_pos[1]:
                     temp += Snake.FOOD
-                #consume
-
-                # elif y == self.snake.y:
-                #     temp += ""
                 else:
                     temp += Snake.EMPTY
-
             print(temp)
 
     def generate_food(self):
         """if eaten generate new food"""
-        self.food_pos = randint(1, self.WIDTH - 1), randint(1, self.HEIGHT - 1)
+        self.food_pos = randint(1, self.WIDTH - 3), randint(1, self.HEIGHT - 3)
 
 
 class Snake:
@@ -68,6 +69,7 @@ class Snake:
     def __init__(self):
         self.dir = self.DIRECTIONS['d']
         self.x, self.y = self.START_POS
+        self.headPos = self.START_POS
 
     def update(self) -> None:
         """updates game state by one tick of logic"""
@@ -75,8 +77,6 @@ class Snake:
         self.move()
         self.consume()
         self.die()
-
-
 
     def handle_input(self):
         """Changes direction of snake based on player input"""
@@ -91,6 +91,7 @@ class Snake:
 
     def move(self) -> None:
         """moves snake by one field in x or y axis"""
+        self.headPos = self.x, self.y
         self.x += self.dir[0]
         self.y += self.dir[1]
 
@@ -103,10 +104,9 @@ class Snake:
 
     def consume(self) -> None:
         """handles snake growing logic when it has collided with food"""
-        if self.x == game.food_pos[0] and  self.y ==  game.food_pos[1]:
+        if self.x == game.food_pos[0] and self.y == game.food_pos[1]:
             game.score += 1
             game.generate_food()
-
 
     def die(self) -> None:
         """handles snake death when it has collided with the wall"""
